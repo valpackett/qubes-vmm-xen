@@ -1,4 +1,4 @@
-From cfa16f9b1a2eef7360b0053f93c84b43e7222910 Mon Sep 17 00:00:00 2001
+From 857f87b890e03a5c1903c00bd383fab2dbf00c11 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Marek=20Marczykowski-G=C3=B3recki?=
  <marmarek@invisiblethingslab.com>
 Date: Fri, 19 Jul 2024 01:15:13 +0200
@@ -36,5 +36,5 @@ index 02354f698653..a73c95a9e766 100644
                 extra_compile_args = extra_compile_args,
                 include_dirs       = [ PATH_XEN,
 -- 
-2.48.1
+2.52.0
 

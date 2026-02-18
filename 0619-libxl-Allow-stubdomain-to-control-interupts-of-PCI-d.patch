@@ -1,4 +1,4 @@
-From e39dd41d81c2e73736b0c4c83c3c2f57c3ac09b0 Mon Sep 17 00:00:00 2001
+From 96a053cae62c93fb4484e9fd107e922f83ce8868 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Marek=20Marczykowski-G=C3=B3recki?=
  <marmarek@invisiblethingslab.com>
 Date: Wed, 16 Nov 2022 01:31:42 +0100
@@ -17,10 +17,10 @@ Signed-off-by: Marek Marczykowski-Górecki <marmarek@invisiblethingslab.com>
  1 file changed, 11 insertions(+)
 
 diff --git a/tools/libs/light/libxl_pci.c b/tools/libs/light/libxl_pci.c
-index bf4acb46d6e8..e87c58100127 100644
+index b9dc2cdac725..77191ae1999e 100644
 --- a/tools/libs/light/libxl_pci.c
 +++ b/tools/libs/light/libxl_pci.c
-@@ -1512,6 +1512,17 @@ static void pci_add_dm_done(libxl__egc *egc,
+@@ -1417,6 +1417,17 @@ static void pci_add_dm_done(libxl__egc *egc,
              rc = ERROR_FAIL;
              goto out;
          }
@@ -39,5 +39,5 @@ index bf4acb46d6e8..e87c58100127 100644
  
  out_no_irq:
 -- 
-2.48.1
+2.52.0
 

@@ -1,4 +1,4 @@
-From 149b6658a56be5087c6e189b4389f7e8e78e720e Mon Sep 17 00:00:00 2001
+From 9a36e0da14034353ea8de83d45af572a2c846276 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Marek=20Marczykowski-G=C3=B3recki?=
  <marmarek@invisiblethingslab.com>
 Date: Wed, 2 Jun 2021 05:24:09 +0200
@@ -39,10 +39,10 @@ index bb60857b030a..c3b38052ae69 100644
      dnl For those that don't have python-config
      CPPFLAGS="$CFLAGS `$PYTHON -c 'import sysconfig; \
 diff --git a/tools/configure.ac b/tools/configure.ac
-index 0dd6d747abb5..de0620e00d67 100644
+index ecd45e782eb8..dcaef3ecc63f 100644
 --- a/tools/configure.ac
 +++ b/tools/configure.ac
-@@ -382,7 +382,6 @@ AS_IF([test -z "$PYTHON"], [AC_CHECK_PROGS([PYTHON], [python3 python python2], e
+@@ -348,7 +348,6 @@ AS_IF([test -z "$PYTHON"], [AC_CHECK_PROGS([PYTHON], [python3 python python2], e
  AS_IF([test "$PYTHON" = "err"], [AC_MSG_ERROR([No python interpreter found])])
  AS_IF([echo "$PYTHON" | grep -q "^/"], [], [AC_PATH_PROG([PYTHON], [$PYTHON])])
  PYTHONPATH=$PYTHON
@@ -51,5 +51,5 @@ index 0dd6d747abb5..de0620e00d67 100644
  AX_PATH_PROG_OR_FAIL([PYTHONPATH], [$PYTHON])
  AX_CHECK_PYTHON_VERSION([2], [7])
 -- 
-2.48.1
+2.52.0
 

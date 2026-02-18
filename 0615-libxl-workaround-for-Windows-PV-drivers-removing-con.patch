@@ -1,4 +1,4 @@
-From 78b0146b0f594388520e5826dda489438562137b Mon Sep 17 00:00:00 2001
+From 08108d84d47eab40809472acb93395d520358ef7 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Marek=20Marczykowski-G=C3=B3recki?=
  <marmarek@invisiblethingslab.com>
 Date: Thu, 27 Oct 2022 21:16:18 +0200
@@ -22,10 +22,10 @@ Signed-off-by: Marek Marczykowski-Górecki <marmarek@invisiblethingslab.com>
  1 file changed, 26 insertions(+), 2 deletions(-)
 
 diff --git a/tools/libs/light/libxl_domain.c b/tools/libs/light/libxl_domain.c
-index 324a4c6607e7..25cde778352d 100644
+index eed0d70d0dae..e426dee9d578 100644
 --- a/tools/libs/light/libxl_domain.c
 +++ b/tools/libs/light/libxl_domain.c
-@@ -767,7 +767,12 @@ int libxl__domain_pvcontrol(libxl__egc *egc, libxl__xswait_state *pvcontrol,
+@@ -769,7 +769,12 @@ int libxl__domain_pvcontrol(libxl__egc *egc, libxl__xswait_state *pvcontrol,
                              domid_t domid, const char *cmd)
  {
      STATE_AO_GC(pvcontrol->ao);
@@ -38,7 +38,7 @@ index 324a4c6607e7..25cde778352d 100644
      int rc;
  
      rc = libxl__domain_pvcontrol_available(gc, domid);
-@@ -781,9 +786,28 @@ int libxl__domain_pvcontrol(libxl__egc *egc, libxl__xswait_state *pvcontrol,
+@@ -783,9 +788,28 @@ int libxl__domain_pvcontrol(libxl__egc *egc, libxl__xswait_state *pvcontrol,
      if (!shutdown_path)
          return ERROR_FAIL;
  
@@ -70,5 +70,5 @@ index 324a4c6607e7..25cde778352d 100644
      pvcontrol->path = shutdown_path;
      pvcontrol->what = GCSPRINTF("guest acknowledgement of %s request", cmd);
 -- 
-2.48.1
+2.52.0
 

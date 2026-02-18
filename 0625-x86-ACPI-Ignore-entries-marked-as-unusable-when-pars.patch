@@ -1,4 +1,4 @@
-From e8045bc8a3db0a2270949c9fc9874a78fffe0f21 Mon Sep 17 00:00:00 2001
+From 453696fd98acdfd9ad8e372b61e6f74f6693409f Mon Sep 17 00:00:00 2001
 From: Simon Gaiser <simon@invisiblethingslab.com>
 Date: Mon, 14 Aug 2023 10:21:38 +0200
 Subject: [PATCH] x86/ACPI: Ignore entries marked as unusable when parsing MADT
@@ -51,7 +51,7 @@ Signed-off-by: Simon Gaiser <simon@invisiblethingslab.com>
  1 file changed, 13 insertions(+), 6 deletions(-)
 
 diff --git a/xen/arch/x86/acpi/boot.c b/xen/arch/x86/acpi/boot.c
-index 170f9783c55e..15ce62be0480 100644
+index 1ca2360e0065..e61a80a7280f 100644
 --- a/xen/arch/x86/acpi/boot.c
 +++ b/xen/arch/x86/acpi/boot.c
 @@ -77,6 +77,17 @@ static int __init cf_check acpi_parse_madt(struct acpi_table_header *table)
@@ -95,5 +95,5 @@ index 170f9783c55e..15ce62be0480 100644
  
  	if ((processor->lapic_flags & ACPI_MADT_ENABLED) ||
 -- 
-2.48.1
+2.52.0
 

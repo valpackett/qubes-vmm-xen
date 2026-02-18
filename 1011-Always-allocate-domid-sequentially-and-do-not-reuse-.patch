@@ -1,4 +1,4 @@
-From 5f8607649d9601eb421a4ee137bce5a4449076d3 Mon Sep 17 00:00:00 2001
+From 5216623e774c3500257599ed161e4a5de36feac1 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Marek=20Marczykowski-G=C3=B3recki?=
  <marmarek@invisiblethingslab.com>
 Date: Fri, 3 Dec 2021 21:13:23 +0100
@@ -6,43 +6,50 @@ Subject: [PATCH] Always allocate domid sequentially, and do not reuse them
 
 While domid wrapping around is unlikely on Qubes, make sure it wont
 happen, to avoid various corner cases.
+
+[val: brought back is_free_domid]
 ---
- xen/common/domctl.c | 36 +++++++++++++-----------------------
- 1 file changed, 13 insertions(+), 23 deletions(-)
+ xen/common/domctl.c | 35 +++++++++++++++++++++++++++++------
+ 1 file changed, 29 insertions(+), 6 deletions(-)
 
 diff --git a/xen/common/domctl.c b/xen/common/domctl.c
-index ea16b759109e..3ed121725089 100644
+index 29a7726d32d0..9385bb7d1e97 100644
 --- a/xen/common/domctl.c
 +++ b/xen/common/domctl.c
-@@ -414,32 +414,22 @@ long do_domctl(XEN_GUEST_HANDLE_PARAM(xen_domctl_t) u_domctl)
+@@ -272,6 +272,20 @@ static bool is_stable_domctl(uint32_t cmd)
+     return cmd == XEN_DOMCTL_get_domain_state;
+ }
+ 
++static inline int is_free_domid(domid_t dom)
++{
++    struct domain *d;
++
++    if ( dom >= DOMID_FIRST_RESERVED )
++        return 0;
++
++    if ( (d = rcu_lock_domain_by_id(dom)) == NULL )
++        return 1;
++
++    rcu_unlock_domain(d);
++    return 0;
++}
++
+ long do_domctl(XEN_GUEST_HANDLE_PARAM(xen_domctl_t) u_domctl)
+ {
+     long ret = 0;
+@@ -409,15 +423,24 @@ long do_domctl(XEN_GUEST_HANDLE_PARAM(xen_domctl_t) u_domctl)
+ 
      case XEN_DOMCTL_createdomain:
      {
-         domid_t        dom;
--        static domid_t rover = 0;
+-        /* NB: ID#0 is reserved, find the first suitable ID instead. */
+-        domid_t domid = domid_alloc(op->domain ?: DOMID_INVALID);
++        domid_t domid;
 +        static domid_t rover = 1;
  
--        dom = op->domain;
--        if ( (dom > 0) && (dom < DOMID_FIRST_RESERVED) )
+-        if ( domid == DOMID_INVALID )
 -        {
 -            ret = -EEXIST;
--            if ( !is_free_domid(dom) )
--                break;
--        }
--        else
--        {
--            for ( dom = rover + 1; dom != rover; dom++ )
--            {
--                if ( dom == DOMID_FIRST_RESERVED )
--                    dom = 1;
--                if ( is_free_domid(dom) )
--                    break;
--            }
--
--            ret = -ENOMEM;
--            if ( dom == rover )
--                break;
--
--            rover = dom;
+-            break;
 +        /* Refuse explicit domid via op->domain */
 +        if ( (op->domain > 0) && (op->domain < DOMID_FIRST_RESERVED) )
 +            return -EINVAL;
@@ -53,13 +60,14 @@ index ea16b759109e..3ed121725089 100644
 +            return -ENOMEM;
          }
  
-+        dom = rover++;
-+        if ( ! is_free_domid(dom) )
++        domid = rover++;
++        if ( ! is_free_domid(domid) )
 +            return -EEXIST;
 +
-         d = domain_create(dom, &op->u.createdomain, false);
++
+         d = domain_create(domid, &op->u.createdomain, false);
          if ( IS_ERR(d) )
          {
 -- 
-2.44.0
+2.52.0
 

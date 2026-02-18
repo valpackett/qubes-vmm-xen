@@ -1,4 +1,4 @@
-From debe19ab592b03d95e00e9e37a1d1fb4a5cdd2bd Mon Sep 17 00:00:00 2001
+From 1db75fa71025818f4f4359019c4524a8186ae808 Mon Sep 17 00:00:00 2001
 From: Demi Marie Obenour <demi@invisiblethingslab.com>
 Date: Thu, 22 Sep 2022 12:27:32 -0400
 Subject: [PATCH] libxl: Fix race condition in domain suspension
@@ -13,10 +13,10 @@ Signed-off-by: Demi Marie Obenour <demi@invisiblethingslab.com>
  1 file changed, 11 insertions(+), 4 deletions(-)
 
 diff --git a/tools/libs/light/libxl_dom_suspend.c b/tools/libs/light/libxl_dom_suspend.c
-index 1c7ceee60dbf..1ee3e5d88af8 100644
+index ade27d9719ff..cacd3e33077a 100644
 --- a/tools/libs/light/libxl_dom_suspend.c
 +++ b/tools/libs/light/libxl_dom_suspend.c
-@@ -209,7 +209,8 @@ static void domain_suspend_common_wait_guest_evtchn(libxl__egc *egc,
+@@ -202,7 +202,8 @@ static void domain_suspend_common_wait_guest_evtchn(libxl__egc *egc,
          libxl__ev_evtchn *evev);
  static void suspend_common_wait_guest_watch(libxl__egc *egc,
        libxl__ev_xswatch *xsw, const char *watch_path, const char *event_path);
@@ -26,7 +26,7 @@ index 1c7ceee60dbf..1ee3e5d88af8 100644
          libxl__domain_suspend_state *dsps);
  static void suspend_common_wait_guest_timeout(libxl__egc *egc,
        libxl__ev_time *ev, const struct timeval *requested_abs, int rc);
-@@ -408,7 +409,7 @@ static void suspend_common_wait_guest_watch(libxl__egc *egc,
+@@ -401,7 +402,7 @@ static void suspend_common_wait_guest_watch(libxl__egc *egc,
      suspend_common_wait_guest_check(egc, dsps);
  }
  
@@ -35,7 +35,7 @@ index 1c7ceee60dbf..1ee3e5d88af8 100644
          libxl__domain_suspend_state *dsps)
  {
      STATE_AO_GC(dsps->ao);
-@@ -427,7 +428,7 @@ static void suspend_common_wait_guest_check(libxl__egc *egc,
+@@ -420,7 +421,7 @@ static void suspend_common_wait_guest_check(libxl__egc *egc,
  
      if (!(info.flags & XEN_DOMINF_shutdown))
          /* keep waiting */
@@ -44,7 +44,7 @@ index 1c7ceee60dbf..1ee3e5d88af8 100644
  
      shutdown_reason = (info.flags >> XEN_DOMINF_shutdownshift)
          & XEN_DOMINF_shutdownmask;
-@@ -438,11 +439,15 @@ static void suspend_common_wait_guest_check(libxl__egc *egc,
+@@ -431,11 +432,15 @@ static void suspend_common_wait_guest_check(libxl__egc *egc,
      }
  
      LOGD(DEBUG, domid, "guest has suspended");
@@ -61,7 +61,7 @@ index 1c7ceee60dbf..1ee3e5d88af8 100644
  }
  
  static void suspend_common_wait_guest_timeout(libxl__egc *egc,
-@@ -450,6 +455,8 @@ static void suspend_common_wait_guest_timeout(libxl__egc *egc,
+@@ -443,6 +448,8 @@ static void suspend_common_wait_guest_timeout(libxl__egc *egc,
  {
      libxl__domain_suspend_state *dsps = CONTAINER_OF(ev, *dsps, guest_timeout);
      STATE_AO_GC(dsps->ao);
@@ -71,5 +71,5 @@ index 1c7ceee60dbf..1ee3e5d88af8 100644
          LOGD(ERROR, dsps->domid, "guest did not suspend, timed out");
          rc = ERROR_GUEST_TIMEDOUT;
 -- 
-2.48.1
+2.52.0
 

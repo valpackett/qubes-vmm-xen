@@ -24,16 +24,16 @@ internal config nothing is changed.
 
 Signed-off-by: Simon Gaiser <simon@invisiblethingslab.com>
 ---
- xen/arch/x86/acpi/cpu_idle.c       |  58 ++++++++++-----
- xen/arch/x86/cpu/mwait-idle.c      | 116 +++++++++++++++++++++++++----
- xen/arch/x86/include/asm/cpuidle.h |   2 +-
- 3 files changed, 142 insertions(+), 34 deletions(-)
+ xen/arch/x86/acpi/cpu_idle.c       |  58 +++++++++----
+ xen/arch/x86/cpu/mwait-idle.c      | 128 ++++++++++++++++++++++++-----
+ xen/arch/x86/include/asm/cpuidle.h |   4 +-
+ 3 files changed, 150 insertions(+), 40 deletions(-)
 
 diff --git a/xen/arch/x86/acpi/cpu_idle.c b/xen/arch/x86/acpi/cpu_idle.c
-index 183db9f62c88..c4d787b5fce9 100644
+index 377556aa2c9d..75679b114ead 100644
 --- a/xen/arch/x86/acpi/cpu_idle.c
 +++ b/xen/arch/x86/acpi/cpu_idle.c
-@@ -78,6 +78,7 @@
+@@ -106,6 +106,7 @@ static always_inline void sti_mwait_cli(unsigned int eax, unsigned int ecx)
  static void cf_check lapic_timer_nop(void) { }
  void (*__read_mostly lapic_timer_off)(void);
  void (*__read_mostly lapic_timer_on)(void);
@@ -41,7 +41,7 @@ index 183db9f62c88..c4d787b5fce9 100644
  
  bool lapic_timer_init(void)
  {
-@@ -1316,6 +1317,26 @@ static void print_cx_pminfo(uint32_t cpu, struct xen_processor_power *power)
+@@ -1305,6 +1306,26 @@ static void print_cx_pminfo(uint32_t cpu, struct xen_processor_power *power)
  #define print_cx_pminfo(c, p)
  #endif
  
@@ -68,7 +68,7 @@ index 183db9f62c88..c4d787b5fce9 100644
  long set_cx_pminfo(uint32_t acpi_id, struct xen_processor_power *power)
  {
      XEN_GUEST_HANDLE(xen_processor_cx_t) states;
-@@ -1363,24 +1384,27 @@ long set_cx_pminfo(uint32_t acpi_id, struct xen_processor_power *power)
+@@ -1352,24 +1373,27 @@ long set_cx_pminfo(uint32_t acpi_id, struct xen_processor_power *power)
          set_cx(acpi_power, &xen_cx);
      }
  
@@ -112,7 +112,7 @@ index 183db9f62c88..c4d787b5fce9 100644
      else if ( cpuidle_current_governor->enable )
      {
          ret = cpuidle_current_governor->enable(acpi_power);
-@@ -1681,7 +1705,7 @@ static int __init cf_check cpuidle_presmp_init(void)
+@@ -1675,7 +1699,7 @@ static int __init cf_check cpuidle_presmp_init(void)
      if ( !xen_cpuidle )
          return 0;
  
@@ -122,10 +122,10 @@ index 183db9f62c88..c4d787b5fce9 100644
      cpu_nfb.notifier_call(&cpu_nfb, CPU_ONLINE, cpu);
      register_cpu_notifier(&cpu_nfb);
 diff --git a/xen/arch/x86/cpu/mwait-idle.c b/xen/arch/x86/cpu/mwait-idle.c
-index ae6987117169..511c666f2d6b 100644
+index 5962ec1db907..911a1b14e0ff 100644
 --- a/xen/arch/x86/cpu/mwait-idle.c
 +++ b/xen/arch/x86/cpu/mwait-idle.c
-@@ -60,15 +60,20 @@
+@@ -62,15 +62,20 @@
  #undef PREFIX
  #define PREFIX "mwait-idle: "
  
@@ -147,7 +147,7 @@ index ae6987117169..511c666f2d6b 100644
  static unsigned int mwait_substates;
  
  /*
-@@ -81,7 +86,7 @@ static unsigned int mwait_substates;
+@@ -83,7 +88,7 @@ static unsigned int mwait_substates;
   * exclusive C-states, this parameter has no effect.
   */
  static unsigned int __ro_after_init preferred_states_mask;
@@ -156,7 +156,7 @@ index ae6987117169..511c666f2d6b 100644
  string_param("preferred-cstates", preferred_states);
  
  #define LAPIC_TIMER_ALWAYS_RELIABLE 0xFFFFFFFF
-@@ -1140,6 +1145,9 @@ static const struct idle_cpu idle_cpu_snr = {
+@@ -1300,6 +1305,9 @@ static const struct idle_cpu idle_cpu_srf = {
  	.c1e_promotion = C1E_PROMOTION_DISABLE,
  };
  
@@ -164,31 +164,45 @@ index ae6987117169..511c666f2d6b 100644
 +};
 +
  #define ICPU(model, cpu) \
- 	{ X86_VENDOR_INTEL, 6, INTEL_FAM6_ ## model, X86_FEATURE_ALWAYS, \
- 	  &idle_cpu_ ## cpu}
-@@ -1425,21 +1433,92 @@ static void __init mwait_idle_state_table_update(void)
+ 	X86_MATCH_VFM(INTEL_ ## model, &idle_cpu_ ## cpu)
+ 
+@@ -1592,25 +1600,98 @@ static void __init mwait_idle_state_table_update(void)
  	}
  }
  
 -static int __init mwait_idle_probe(void)
+-{
+-	unsigned int eax, ebx, ecx;
+-	const struct x86_cpu_id *id;
+-	const char *str;
 +static int mwait_idle_state_table_from_acpi(void) {
 +	// Linux tries every CPU until it finds one that declares FFH as entry
 +	// method for all C-states in it's ACPI table. It assumes that the
 +	// config is identical for all CPUs. So let's just check the first CPU.
-+
+ 
+-	if (boot_cpu_data.vendor != X86_VENDOR_INTEL)
+-		return -ENODEV;
 +	int rc = -EINVAL;
 +	struct acpi_processor_power *acpi_power = processor_powers[0];
 +	struct cpuidle_state *state_table = xzalloc_array(
 +			struct cpuidle_state,
 +			acpi_power->count + 1 /* NULL at end */ - 1 /* no C0 */
 +			);
-+
+ 
+-	id = x86_match_cpu(intel_idle_ids);
+-	if (!id) {
+-		pr_debug(PREFIX "does not run on family %d model %d\n",
+-			 boot_cpu_data.family, boot_cpu_data.model);
+-		return -ENODEV;
 +	if (state_table == NULL) {
 +		pr_err(PREFIX "failed to allocate state table\n");
 +		rc = -ENOMEM;
 +		goto ret;
-+	}
-+
+ 	}
+ 
+-	if (!boot_cpu_has(X86_FEATURE_MONITOR)) {
+-		pr_debug(PREFIX "Please enable MWAIT in BIOS SETUP\n");
+-		return -ENODEV;
 +	for (unsigned int cstate = 1; cstate < acpi_power->count; ++cstate) {
 +		struct acpi_processor_cx *acpi_cx = &acpi_power->states[cstate];
 +		struct cpuidle_state *idle_cx = &state_table[cstate - 1];
@@ -224,22 +238,13 @@ index ae6987117169..511c666f2d6b 100644
 +}
 +
 +static int mwait_idle_probe(bool from_acpi)
- {
- 	unsigned int eax, ebx, ecx;
--	const struct x86_cpu_id *id = x86_match_cpu(intel_idle_ids);
- 	const char *str;
- 
--	if (!id) {
--		pr_debug(PREFIX "does not run on family %d model %d\n",
--			 boot_cpu_data.x86, boot_cpu_data.x86_model);
--		return -ENODEV;
--	}
++{
++	unsigned int eax, ebx, ecx;
++	const char *str;
++
 +	if (from_acpi) {
 +		int rc;
- 
--	if (!boot_cpu_has(X86_FEATURE_MONITOR)) {
--		pr_debug(PREFIX "Please enable MWAIT in BIOS SETUP\n");
--		return -ENODEV;
++
 +		if (boot_cpu_data.x86_vendor != X86_VENDOR_INTEL ||
 +		    boot_cpu_data.x86 != 6 ||
 +		    !boot_cpu_has(X86_FEATURE_MONITOR)) {
@@ -253,7 +258,13 @@ index ae6987117169..511c666f2d6b 100644
 +
 +		icpu = &idle_cpu_acpi;
 +	} else {
-+		const struct x86_cpu_id *id = x86_match_cpu(intel_idle_ids);
++		const struct x86_cpu_id *id;
++
++		if (boot_cpu_data.vendor != X86_VENDOR_INTEL)
++			return -ENODEV;
++
++		id = x86_match_cpu(intel_idle_ids);
++
 +		if (!id) {
 +			pr_debug(PREFIX "no interal config for family %d model %d\n",
 +				 boot_cpu_data.x86, boot_cpu_data.x86_model);
@@ -269,15 +280,15 @@ index ae6987117169..511c666f2d6b 100644
  	}
  
  	if (boot_cpu_data.cpuid_level < CPUID_MWAIT_LEAF)
-@@ -1459,7 +1538,6 @@ static int __init mwait_idle_probe(void)
+@@ -1630,7 +1711,6 @@ static int __init mwait_idle_probe(void)
  
  	pr_debug(PREFIX "MWAIT substates: %#x\n", mwait_substates);
  
 -	icpu = id->driver_data;
  	cpuidle_state_table = icpu->state_table;
  
- 	if (boot_cpu_has(X86_FEATURE_ARAT))
-@@ -1504,7 +1582,8 @@ static int __init mwait_idle_probe(void)
+ 	if (boot_cpu_has(X86_FEATURE_XEN_ARAT))
+@@ -1675,7 +1755,8 @@ static int __init mwait_idle_probe(void)
  	if (str[0])
  		printk("unrecognized \"preferred-cstates=%s\"\n", str);
  
@@ -287,7 +298,7 @@ index ae6987117169..511c666f2d6b 100644
  
  	return 0;
  }
-@@ -1613,14 +1692,19 @@ static int cf_check mwait_idle_cpu_init(
+@@ -1784,14 +1865,19 @@ static int cf_check mwait_idle_cpu_init(
  	return NOTIFY_DONE;
  }
  
@@ -306,22 +317,25 @@ index ae6987117169..511c666f2d6b 100644
  
 -	err = mwait_idle_probe();
 +	err = mwait_idle_probe(from_acpi);
- 	if (!err && !boot_cpu_has(X86_FEATURE_ARAT)) {
+ 	if (!err && !boot_cpu_has(X86_FEATURE_XEN_ARAT)) {
  		hpet_broadcast_init();
  		if (xen_cpuidle < 0 && !hpet_broadcast_is_available())
 diff --git a/xen/arch/x86/include/asm/cpuidle.h b/xen/arch/x86/include/asm/cpuidle.h
-index 707b3e948d45..3f5cd40fd596 100644
+index 3a6b73142b44..c30e413d3d99 100644
 --- a/xen/arch/x86/include/asm/cpuidle.h
 +++ b/xen/arch/x86/include/asm/cpuidle.h
-@@ -15,7 +15,7 @@ extern void (*lapic_timer_on)(void);
- 
+@@ -16,9 +16,9 @@ extern void (*lapic_timer_on)(void);
  extern uint64_t (*cpuidle_get_tick)(void);
  
+ #ifdef CONFIG_INTEL
 -int mwait_idle_init(struct notifier_block *nfb);
 +int mwait_idle_init(struct notifier_block *nfb, bool);
- int cpuidle_init_cpu(unsigned int cpu);
- void cf_check default_dead_idle(void);
- void cf_check acpi_dead_idle(void);
+ #else
+-static inline int mwait_idle_init(struct notifier_block *nfb)
++static inline int mwait_idle_init(struct notifier_block *nfb, bool)
+ {
+     return -ENODEV;
+ }
 -- 
-2.48.1
+2.52.0
 

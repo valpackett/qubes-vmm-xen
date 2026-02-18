@@ -1,4 +1,4 @@
-From e41d934545880e754c9d5c8a77864c242da1ac7a Mon Sep 17 00:00:00 2001
+From 9193b01ced88e4c3ed3d227fb02dfbacb1f80de4 Mon Sep 17 00:00:00 2001
 From: Simon Gaiser <simon@invisiblethingslab.com>
 Date: Mon, 8 Jul 2024 13:39:12 +0200
 Subject: [PATCH] x86/msr: Allow hardware domain to read package C-state
@@ -12,17 +12,16 @@ related things for example S0ix.
 NAKed by upstream: https://lore.kernel.org/xen-devel/15a30769-4a61-ca22-7b5a-6249186cd8a2@suse.com/
 Keep it in Qubes for now since it's very helpful for debugging with
 existing software.
-
 ---
  xen/arch/x86/include/asm/msr-index.h |  9 +++++++++
  xen/arch/x86/pv/emul-priv-op.c       | 19 +++++++++++++++++++
  2 files changed, 28 insertions(+)
 
 diff --git a/xen/arch/x86/include/asm/msr-index.h b/xen/arch/x86/include/asm/msr-index.h
-index 22d9e76e5521..b324356fd550 100644
+index b92a278611cb..261620a8c6e6 100644
 --- a/xen/arch/x86/include/asm/msr-index.h
 +++ b/xen/arch/x86/include/asm/msr-index.h
-@@ -699,4 +699,13 @@
+@@ -723,4 +723,13 @@
  #define MSR_PKGC9_IRTL			0x00000634
  #define MSR_PKGC10_IRTL			0x00000635
  
@@ -37,10 +36,10 @@ index 22d9e76e5521..b324356fd550 100644
 +
  #endif /* __ASM_MSR_INDEX_H */
 diff --git a/xen/arch/x86/pv/emul-priv-op.c b/xen/arch/x86/pv/emul-priv-op.c
-index 70150c272276..848b115e3272 100644
+index 1d9e57ad2763..89d6d2aa3dae 100644
 --- a/xen/arch/x86/pv/emul-priv-op.c
 +++ b/xen/arch/x86/pv/emul-priv-op.c
-@@ -969,6 +969,25 @@ static int cf_check read_msr(
+@@ -987,6 +987,25 @@ static int cf_check read_msr(
          *val = 0;
          return X86EMUL_OKAY;
  
@@ -67,5 +66,5 @@ index 70150c272276..848b115e3272 100644
      case MSR_P6_EVNTSEL(0) ... MSR_P6_EVNTSEL(3):
      case MSR_CORE_PERF_FIXED_CTR0 ... MSR_CORE_PERF_FIXED_CTR2:
 -- 
-2.48.1
+2.52.0
 

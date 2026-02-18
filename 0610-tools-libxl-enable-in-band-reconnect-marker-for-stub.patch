@@ -1,4 +1,4 @@
-From fe261219dda078109b9d1281d3333a4e658f8475 Mon Sep 17 00:00:00 2001
+From 227e36fb01e70550e94a30978cc0318068d6873e Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Marek=20Marczykowski-G=C3=B3recki?=
  <marmarek@invisiblethingslab.com>
 Date: Sat, 3 Sep 2022 04:31:34 +0200
@@ -25,10 +25,10 @@ Signed-off-by: Marek Marczykowski-Górecki <marmarek@invisiblethingslab.com>
  1 file changed, 2 insertions(+), 1 deletion(-)
 
 diff --git a/tools/libs/light/libxl_dm.c b/tools/libs/light/libxl_dm.c
-index 160d4e065d08..d3df66786c45 100644
+index ae82bd847f83..9f1def8052bc 100644
 --- a/tools/libs/light/libxl_dm.c
 +++ b/tools/libs/light/libxl_dm.c
-@@ -2646,10 +2646,11 @@ static void spawn_qmp_proxy(libxl__egc *egc,
+@@ -2403,10 +2403,11 @@ static void spawn_qmp_proxy(libxl__egc *egc,
      sdss->qmp_proxy_spawn.failure_cb = qmp_proxy_startup_failed;
      sdss->qmp_proxy_spawn.detached_cb = qmp_proxy_detached;
  
@@ -42,5 +42,5 @@ index 160d4e065d08..d3df66786c45 100644
      args[nr++] = GCSPRINTF("%s/device-model/%u/qmp-vchan", dom_path, guest_domid);
      args[nr++] = (char*)libxl__qemu_qmp_path(gc, guest_domid);
 -- 
-2.48.1
+2.52.0
 

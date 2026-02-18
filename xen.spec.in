@@ -60,7 +60,7 @@
 %define _missing_build_ids_terminate_build 0
 
 # Hypervisor ABI
-%define hv_abi 4.19
+%define hv_abi 4.21
 
 %define upstream_version @VERSION@
 %define rctag %(echo @VERSION@ | sed -n -e 's/.*-\\(rc[0-9]*\\).*/0.\\1./;/rc/p')
@@ -77,7 +77,6 @@ Source2: %{name}.logrotate
 # .config file for xen hypervisor
 Source3: config
 Source32: xen.modules-load.conf
-Provides: xen-gvt
 
 # Out-of-tree patches.
 #
@@ -91,15 +90,11 @@ Provides: xen-gvt
 # 1100+: Others
 
 # EFI workarounds
-Patch0200: 0200-EFI-early-Add-noexit-to-inhibit-calling-ExitBootServ.patch
 Patch0201: 0201-efi-Ensure-incorrectly-typed-runtime-services-get-ma.patch
 Patch0202: 0202-Add-xen.cfg-options-for-mapbs-and-noexitboot.patch
 Patch0203: 0203-xen.efi.build.patch
 
 # Backports (300+)
-Patch0300: 0300-xen-list-add-LIST_HEAD_RO_AFTER_INIT.patch
-Patch0301: 0301-x86-mm-add-API-for-marking-only-part-of-a-MMIO-page-.patch
-Patch0302: 0302-drivers-char-Use-sub-page-ro-API-to-make-just-xhci-d.patch
 
 # Security fixes (500+)
 
@@ -137,7 +132,6 @@ Patch0628: 0628-libxl_pci-Pass-power_mgmt-via-QMP.patch
 
 Patch0629: 0629-python-avoid-conflicting-_FORTIFY_SOURCE-values.patch
 Patch0630: 0630-libxl-extend-IGD-check.patch
-Patch0631: 0631-libxl-Skip-missing-legacy-IRQ.patch
 Patch0632: 0632-libxl-do-not-consider-IGD-VF-a-VGA-passthru.patch
 Patch0633: 0633-EFI-Fix-relocating-ESRT-for-dom0.patch
 
@@ -167,11 +161,6 @@ Patch1100: 1100-Define-build-dates-time-based-on-SOURCE_DATE_EPOCH.patch
 Patch1101: 1101-docs-rename-DATE-to-PANDOC_REL_DATE-and-allow-to-spe.patch
 Patch1102: 1102-docs-xen-headers-use-alphabetical-sorting-for-incont.patch
 Patch1103: 1103-Strip-build-path-directories-in-tools-xen-and-xen-ar.patch
-
-# GVT-g
-Patch1200: 1200-hypercall-XENMEM_get_mfn_from_pfn.patch
-Patch1201: 1201-patch-gvt-hvmloader.patch.patch
-Patch1202: 1202-libxl-Add-partially-Intel-GVT-g-support-xengt-device.patch
 
 %if %build_qemutrad
 BuildRequires: libidn-devel zlib-devel SDL-devel curl-devel
@@ -266,7 +255,6 @@ and xen.lowlevel.xc modules.
 Summary: Libraries for Xen tools
 Requires: xen-licenses
 # BEGIN QUBES SPECIFIC PART
-Provides: xen-gvt-libs
 # toolstack <-> stubdomain API change
 Conflicts: xen-hvm-stubdom-linux < 1.2.5
 Conflicts: xen-hvm-stubdom-linux-full < 1.2.5
@@ -868,7 +856,7 @@ fi
 %{_libdir}/libxenlight.so.4.*
 %{_libdir}/libxenstat.so.4.*
 %{_libdir}/libxenstore.so.4
-%{_libdir}/libxenstore.so.4.0
+%{_libdir}/libxenstore.so.4.1
 %{_libdir}/libxentoolcore.so.1
 %{_libdir}/libxentoolcore.so.1.0
 %{_libdir}/libxentoollog.so.1
@@ -877,6 +865,8 @@ fi
 %{_libdir}/libxlutil.so.4.*
 %{_libdir}/libxenhypfs.so.1
 %{_libdir}/libxenhypfs.so.1.0
+%{_libdir}/libxenmanage.so.1
+%{_libdir}/libxenmanage.so.1.0
 
 # All runtime stuff except for XenD/xm python stuff
 %files runtime
@@ -941,6 +931,7 @@ fi
 %{_mandir}/man1/xenhypfs.1.gz
 %{_mandir}/man7/xen-vbd-interface.7.gz
 %{_mandir}/man5/xl-pci-configuration.5.gz
+%{_mandir}/man8/xenwatchdogd.8.gz
 %endif
 
 # The firmware

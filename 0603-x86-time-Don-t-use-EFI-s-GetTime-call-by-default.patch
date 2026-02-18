@@ -1,4 +1,4 @@
-From d9ec2c6b58264d12bcfee689d632eff226ec08f7 Mon Sep 17 00:00:00 2001
+From e3351146c5ccfc13661b6ec8a2b04a658d967ed2 Mon Sep 17 00:00:00 2001
 From: Ross Lagerwall <ross.lagerwall@xxxxxxxxxx>
 Date: Tue, 1 Dec 2015 16:57:46 +0000
 Subject: [PATCH] x86/time: Don't use EFI's GetTime call by default
@@ -12,41 +12,37 @@ to crash."
 
 Signed-off-by: Ross Lagerwall <ross.lagerwall@xxxxxxxxxx>
 ---
- xen/arch/x86/time.c | 9 +++++++--
- 1 file changed, 7 insertions(+), 2 deletions(-)
+ xen/arch/x86/time.c | 5 +++++
+ 1 file changed, 5 insertions(+)
 
 diff --git a/xen/arch/x86/time.c b/xen/arch/x86/time.c
-index a97d78484105..45f6baf6270b 100644
+index 87b4e832505a..6a451b2707c5 100644
 --- a/xen/arch/x86/time.c
 +++ b/xen/arch/x86/time.c
-@@ -1245,20 +1245,25 @@ static void __get_cmos_time(struct rtc_time *rtc)
-         rtc->year += 100;
+@@ -1585,6 +1585,9 @@ static int __init cf_check parse_wallclock(const char *arg)
  }
+ custom_param("wallclock", parse_wallclock);
  
 +/* EFI's GetTime() is frequently broken so don't use it by default. */
 +#undef USE_EFI_GET_TIME
 +
- static unsigned long get_cmos_time(void)
+ static void __init probe_wallclock(void)
  {
--    unsigned long res, flags;
-+    unsigned long flags;
-     struct rtc_time rtc;
-     unsigned int seconds = 60;
-     static bool __read_mostly cmos_rtc_probe;
-     boolean_param("cmos-rtc-probe", cmos_rtc_probe);
- 
+     ASSERT(wallclock_source == WALLCLOCK_UNSET);
+@@ -1599,11 +1602,13 @@ static void __init probe_wallclock(void)
+         wallclock_source = WALLCLOCK_CMOS;
+         return;
+     }
 +#ifdef USE_EFI_GET_TIME
-     if ( efi_enabled(EFI_RS) )
+     if ( efi_enabled(EFI_RS) && efi_get_time() )
      {
--        res = efi_get_time();
-+        unsigned long res = efi_get_time();
-         if ( res )
-             return res;
+         wallclock_source = WALLCLOCK_EFI;
+         return;
      }
 +#endif
  
-     if ( likely(!(acpi_gbl_FADT.boot_flags & ACPI_FADT_NO_CMOS_RTC)) )
-         cmos_rtc_probe = false;
+     panic("No usable wallclock found, probed:%s%s%s\n%s",
+           !opt_cmos_rtc_probe && !efi_enabled(EFI_RS) ? " None" : "",
 -- 
-2.48.1
+2.52.0
 

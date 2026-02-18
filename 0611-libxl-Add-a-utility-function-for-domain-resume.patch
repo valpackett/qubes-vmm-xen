@@ -1,4 +1,4 @@
-From 7d4953f72f80129fe556ddfd1feef9a8afc9b285 Mon Sep 17 00:00:00 2001
+From 90fc4c73151212a679069512127cb89734c1a1b7 Mon Sep 17 00:00:00 2001
 From: Demi Marie Obenour <demi@invisiblethingslab.com>
 Date: Mon, 26 Sep 2022 10:48:26 -0400
 Subject: [PATCH] libxl: Add a utility function for domain resume
@@ -19,10 +19,10 @@ Signed-off-by: Demi Marie Obenour <demi@invisiblethingslab.com>
  1 file changed, 19 insertions(+), 22 deletions(-)
 
 diff --git a/tools/libs/light/libxl_dom_suspend.c b/tools/libs/light/libxl_dom_suspend.c
-index 6091a5f3f695..ce501a932643 100644
+index f0a74fc82c2f..f57b19a4823c 100644
 --- a/tools/libs/light/libxl_dom_suspend.c
 +++ b/tools/libs/light/libxl_dom_suspend.c
-@@ -446,6 +446,22 @@ int libxl__domain_resume_device_model_deprecated(libxl__gc *gc, uint32_t domid)
+@@ -425,6 +425,22 @@ int libxl__domain_resume_device_model_deprecated(libxl__gc *gc, uint32_t domid)
      return 0;
  }
  
@@ -45,7 +45,7 @@ index 6091a5f3f695..ce501a932643 100644
  int libxl__domain_resume_deprecated(libxl__gc *gc, uint32_t domid, int suspend_cancel)
  {
      int rc = 0;
-@@ -464,16 +480,7 @@ int libxl__domain_resume_deprecated(libxl__gc *gc, uint32_t domid, int suspend_c
+@@ -443,16 +459,7 @@ int libxl__domain_resume_deprecated(libxl__gc *gc, uint32_t domid, int suspend_c
          }
      }
  
@@ -63,20 +63,20 @@ index 6091a5f3f695..ce501a932643 100644
  out:
      return rc;
  }
-@@ -655,19 +662,9 @@ static void domain_resume_done(libxl__egc *egc,
+@@ -590,19 +597,9 @@ static void domain_resume_done(libxl__egc *egc,
      /* Convenience aliases */
      libxl_domid domid = dmrs->domid;
  
 -    if (rc) goto out;
--
++    if (!rc)
++        rc = domain_resume_raw(gc, domid, dmrs->suspend_cancel);
+ 
 -    if (xc_domain_resume(CTX->xch, domid, dmrs->suspend_cancel)) {
 -        LOGED(ERROR, domid, "xc_domain_resume failed");
 -        rc = ERROR_FAIL;
 -        goto out;
 -    }
-+    if (!rc)
-+        rc = domain_resume_raw(gc, domid, dmrs->suspend_cancel);
- 
+-
 -    if (!xs_resume_domain(CTX->xsh, domid)) {
 -        LOGED(ERROR, domid, "xs_resume_domain failed");
 -        rc = ERROR_FAIL;
@@ -86,5 +86,5 @@ index 6091a5f3f695..ce501a932643 100644
  }
  
 -- 
-2.48.1
+2.52.0
 
