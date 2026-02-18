@@ -11,8 +11,11 @@ source:
 #  - url: https://downloads.xenproject.org/release/xen/@VERSION@/xen-@VERSION@.tar.gz
 #    signature: https://downloads.xenproject.org/release/xen/@VERSION@/xen-@VERSION@.tar.gz.sig
 #  - git-url: https://gitlab.com/xen-project/xen.git
-  - git-url: https://xenbits.xenproject.org/git-http/xen.git
-    tag: RELEASE-@VERSION@
-    git-basename: xen-@VERSION@
-    pubkeys:
-    - xen.org-key.asc
+  # - git-url: https://xenbits.xenproject.org/git-http/xen.git
+  #   tag: RELEASE-@VERSION@
+  #   git-basename: xen-@VERSION@
+  #   pubkeys:
+  #   - xen.org-key.asc
+  - git-url: https://github.com/QubesOS/xen.git
+    commit-id: 1ed7a7ebae8541937b934e917bc1f674d013b4da
+    git-basename: dev-qubes

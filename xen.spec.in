@@ -1,3 +1,4 @@
+
 # Build ocaml bits unless rpmbuild was run with --without ocaml
 # or ocamlopt is missing (the xen makefile doesn't build ocaml bits if it isn't there)
 %define with_ocaml 0
@@ -60,19 +61,20 @@
 %define _missing_build_ids_terminate_build 0
 
 # Hypervisor ABI
-%define hv_abi 4.21
+%define hv_abi 4.22
 
-%define upstream_version @VERSION@
-%define rctag %(echo @VERSION@ | sed -n -e 's/.*-\\(rc[0-9]*\\).*/0.\\1./;/rc/p')
+%define upstream_version 4.22-unstable
+%define rctag %(echo 4.22-unstable | sed -n -e 's/.*-\\(rc[0-9]*\\).*/0.\\1./;/rc/p')
 
 Summary: Xen is a virtual machine monitor
 Name:    xen
-Version: %(echo @VERSION@ | sed 's/-rc.*//')
-Release: %{?rctag}@REL@%{?dist}
+Version: %(echo 4.22 | sed 's/-rc.*//')
+Release: %{?rctag}0%{?dist}
 Epoch:   2001
 License: GPLv2+ and LGPLv2+ and BSD
 URL:     http://xen.org/
-Source0: https://downloads.xenproject.org/release/xen/%{upstream_version}/xen-%{upstream_version}.tar.gz
+# Source0: https://downloads.xenproject.org/release/xen/%{upstream_version}/xen-%{upstream_version}.tar.gz
+Source0: https://github.com/QubesOS/xen/archive/refs/heads/dev-qubes.tar.gz
 Source2: %{name}.logrotate
 # .config file for xen hypervisor
 Source3: config
@@ -90,77 +92,77 @@ Source32: xen.modules-load.conf
 # 1100+: Others
 
 # EFI workarounds
-Patch0201: 0201-efi-Ensure-incorrectly-typed-runtime-services-get-ma.patch
-Patch0202: 0202-Add-xen.cfg-options-for-mapbs-and-noexitboot.patch
-Patch0203: 0203-xen.efi.build.patch
+# Patch0201: 0201-efi-Ensure-incorrectly-typed-runtime-services-get-ma.patch
+# Patch0202: 0202-Add-xen.cfg-options-for-mapbs-and-noexitboot.patch
+# Patch0203: 0203-xen.efi.build.patch
 
 # Backports (300+)
 
 # Security fixes (500+)
 
 # Upstreamable patches (600+)
-Patch0600: 0600-libxl-create-writable-error-xenstore-dir.patch
-Patch0601: 0601-libxl-do-not-wait-for-backend-on-PCI-remove-when-bac.patch
-Patch0602: 0602-libvchan-use-xengntshr_unshare-instead-of-munmap-dir.patch
-Patch0603: 0603-x86-time-Don-t-use-EFI-s-GetTime-call-by-default.patch
-Patch0604: 0604-libxl-automatically-enable-gfx_passthru-if-IGD-is-as.patch
-Patch0605: 0605-autoconf-fix-handling-absolute-PYTHON-path.patch
-Patch0606: 0606-libxl-do-not-require-filling-backend_domid-to-remove.patch
-Patch0607: 0607-libxl-add-pcidevs-to-stubdomain-earlier.patch
-Patch0609: 0609-vchan-socket-proxy-add-reconnect-marker-support.patch
-Patch0610: 0610-tools-libxl-enable-in-band-reconnect-marker-for-stub.patch
-Patch0611: 0611-libxl-Add-a-utility-function-for-domain-resume.patch
-Patch0612: 0612-libxl-Properly-suspend-stubdomains.patch
-Patch0613: 0613-libxl-Fix-race-condition-in-domain-suspension.patch
-Patch0614: 0614-libxl-Add-additional-domain-suspend-resume-logs.patch
-Patch0615: 0615-libxl-workaround-for-Windows-PV-drivers-removing-con.patch
-Patch0616: 0616-libxl-check-control-feature-before-issuing-pvcontrol.patch
-Patch0617: 0617-tools-kdd-mute-spurious-gcc-warning.patch
-Patch0618: 0618-libxl-do-not-start-qemu-in-dom0-just-for-extra-conso.patch
-Patch0619: 0619-libxl-Allow-stubdomain-to-control-interupts-of-PCI-d.patch
-Patch0620: 0620-Validate-EFI-memory-descriptors.patch
-Patch0621: 0621-x86-mm-make-code-robust-to-future-PAT-changes.patch
-Patch0622: 0622-Drop-ELF-notes-from-non-EFI-binary-too.patch
-Patch0623: 0623-xenpm-Factor-out-a-non-fatal-cpuid_parse-variant.patch
+# Patch0600: 0600-libxl-create-writable-error-xenstore-dir.patch
+# Patch0601: 0601-libxl-do-not-wait-for-backend-on-PCI-remove-when-bac.patch
+# Patch0602: 0602-libvchan-use-xengntshr_unshare-instead-of-munmap-dir.patch
+# Patch0603: 0603-x86-time-Don-t-use-EFI-s-GetTime-call-by-default.patch
+# Patch0604: 0604-libxl-automatically-enable-gfx_passthru-if-IGD-is-as.patch
+# Patch0605: 0605-autoconf-fix-handling-absolute-PYTHON-path.patch
+# Patch0606: 0606-libxl-do-not-require-filling-backend_domid-to-remove.patch
+# Patch0607: 0607-libxl-add-pcidevs-to-stubdomain-earlier.patch
+# Patch0609: 0609-vchan-socket-proxy-add-reconnect-marker-support.patch
+# Patch0610: 0610-tools-libxl-enable-in-band-reconnect-marker-for-stub.patch
+# Patch0611: 0611-libxl-Add-a-utility-function-for-domain-resume.patch
+# Patch0612: 0612-libxl-Properly-suspend-stubdomains.patch
+# Patch0613: 0613-libxl-Fix-race-condition-in-domain-suspension.patch
+# Patch0614: 0614-libxl-Add-additional-domain-suspend-resume-logs.patch
+# Patch0615: 0615-libxl-workaround-for-Windows-PV-drivers-removing-con.patch
+# Patch0616: 0616-libxl-check-control-feature-before-issuing-pvcontrol.patch
+# Patch0617: 0617-tools-kdd-mute-spurious-gcc-warning.patch
+# Patch0618: 0618-libxl-do-not-start-qemu-in-dom0-just-for-extra-conso.patch
+# Patch0619: 0619-libxl-Allow-stubdomain-to-control-interupts-of-PCI-d.patch
+# Patch0620: 0620-Validate-EFI-memory-descriptors.patch
+# Patch0621: 0621-x86-mm-make-code-robust-to-future-PAT-changes.patch
+# Patch0622: 0622-Drop-ELF-notes-from-non-EFI-binary-too.patch
+# Patch0623: 0623-xenpm-Factor-out-a-non-fatal-cpuid_parse-variant.patch
 
 # S0ix support
-Patch0624: 0624-x86-idle-Get-PC-8.10-counters-for-Tiger-and-Alder-La.patch
-Patch0625: 0625-x86-ACPI-Ignore-entries-marked-as-unusable-when-pars.patch
-Patch0626: 0626-x86-msr-Allow-hardware-domain-to-read-package-C-stat.patch
-Patch0627: 0627-x86-mwait-idle-Use-ACPI-for-CPUs-without-hardcoded-C.patch
-Patch0628: 0628-libxl_pci-Pass-power_mgmt-via-QMP.patch
+# Patch0624: 0624-x86-idle-Get-PC-8.10-counters-for-Tiger-and-Alder-La.patch
+# Patch0625: 0625-x86-ACPI-Ignore-entries-marked-as-unusable-when-pars.patch
+# Patch0626: 0626-x86-msr-Allow-hardware-domain-to-read-package-C-stat.patch
+# Patch0627: 0627-x86-mwait-idle-Use-ACPI-for-CPUs-without-hardcoded-C.patch
+# Patch0628: 0628-libxl_pci-Pass-power_mgmt-via-QMP.patch
 
-Patch0629: 0629-python-avoid-conflicting-_FORTIFY_SOURCE-values.patch
-Patch0630: 0630-libxl-extend-IGD-check.patch
-Patch0632: 0632-libxl-do-not-consider-IGD-VF-a-VGA-passthru.patch
-Patch0633: 0633-EFI-Fix-relocating-ESRT-for-dom0.patch
+# Patch0629: 0629-python-avoid-conflicting-_FORTIFY_SOURCE-values.patch
+# Patch0630: 0630-libxl-extend-IGD-check.patch
+# Patch0632: 0632-libxl-do-not-consider-IGD-VF-a-VGA-passthru.patch
+# Patch0633: 0633-EFI-Fix-relocating-ESRT-for-dom0.patch
 
 # Qubes specific patches
-Patch1000: 1000-Do-not-access-network-during-the-build.patch
-Patch1001: 1001-hotplug-store-block-params-for-cleanup.patch
-Patch1002: 1002-libxl-do-not-start-dom0-qemu-when-not-needed.patch
-Patch1003: 1003-libxl-do-not-start-qemu-in-dom0-if-possible.patch
-Patch1004: 1004-systemd-enable-xenconsoled-logging-by-default.patch
-Patch1005: 1005-hotplug-trigger-udev-event-on-block-attach-detach.patch
-Patch1006: 1006-libxl-use-EHCI-for-providing-tablet-USB-device.patch
-Patch1007: 1007-libxl-allow-kernel-cmdline-without-kernel-if-stubdom.patch
-Patch1008: 1008-libxl-Force-emulating-readonly-disks-as-SCSI.patch
-Patch1009: 1009-tools-xenconsole-replace-ESC-char-on-xenconsole-outp.patch
-Patch1010: 1010-libxl-disable-vkb-by-default.patch
-Patch1011: 1011-Always-allocate-domid-sequentially-and-do-not-reuse-.patch
-Patch1012: 1012-libxl-add-qubes-gui-graphics.patch
-Patch1013: 1013-Additional-support-in-ACPI-builder-to-support-SLIC-a.patch
-Patch1014: 1014-libxl-conditionally-allow-PCI-passthrough-on-PV-with.patch
-Patch1015: 1015-gnttab-disable-grant-tables-v2-by-default.patch
-Patch1016: 1016-cpufreq-enable-HWP-by-default.patch
-Patch1017: 1017-Fix-IGD-passthrough-with-linux-stubdomain.patch
-Patch1018: 1018-x86-Use-Linux-s-PAT.patch
+# Patch1000: 1000-Do-not-access-network-during-the-build.patch
+# Patch1001: 1001-hotplug-store-block-params-for-cleanup.patch
+# Patch1002: 1002-libxl-do-not-start-dom0-qemu-when-not-needed.patch
+# Patch1003: 1003-libxl-do-not-start-qemu-in-dom0-if-possible.patch
+# Patch1004: 1004-systemd-enable-xenconsoled-logging-by-default.patch
+# Patch1005: 1005-hotplug-trigger-udev-event-on-block-attach-detach.patch
+# Patch1006: 1006-libxl-use-EHCI-for-providing-tablet-USB-device.patch
+# Patch1007: 1007-libxl-allow-kernel-cmdline-without-kernel-if-stubdom.patch
+# Patch1008: 1008-libxl-Force-emulating-readonly-disks-as-SCSI.patch
+# Patch1009: 1009-tools-xenconsole-replace-ESC-char-on-xenconsole-outp.patch
+# Patch1010: 1010-libxl-disable-vkb-by-default.patch
+# Patch1011: 1011-Always-allocate-domid-sequentially-and-do-not-reuse-.patch
+# Patch1012: 1012-libxl-add-qubes-gui-graphics.patch
+# Patch1013: 1013-Additional-support-in-ACPI-builder-to-support-SLIC-a.patch
+# Patch1014: 1014-libxl-conditionally-allow-PCI-passthrough-on-PV-with.patch
+# Patch1015: 1015-gnttab-disable-grant-tables-v2-by-default.patch
+# Patch1016: 1016-cpufreq-enable-HWP-by-default.patch
+# Patch1017: 1017-Fix-IGD-passthrough-with-linux-stubdomain.patch
+# Patch1018: 1018-x86-Use-Linux-s-PAT.patch
 
 # Reproducible builds
-Patch1100: 1100-Define-build-dates-time-based-on-SOURCE_DATE_EPOCH.patch
-Patch1101: 1101-docs-rename-DATE-to-PANDOC_REL_DATE-and-allow-to-spe.patch
-Patch1102: 1102-docs-xen-headers-use-alphabetical-sorting-for-incont.patch
-Patch1103: 1103-Strip-build-path-directories-in-tools-xen-and-xen-ar.patch
+# Patch1100: 1100-Define-build-dates-time-based-on-SOURCE_DATE_EPOCH.patch
+# Patch1101: 1101-docs-rename-DATE-to-PANDOC_REL_DATE-and-allow-to-spe.patch
+# Patch1102: 1102-docs-xen-headers-use-alphabetical-sorting-for-incont.patch
+# Patch1103: 1103-Strip-build-path-directories-in-tools-xen-and-xen-ar.patch
 
 %if %build_qemutrad
 BuildRequires: libidn-devel zlib-devel SDL-devel curl-devel
@@ -374,7 +376,7 @@ manage Xen virtual machines.
 %endif
 
 %prep
-%autosetup -p1 -n %{name}-%{upstream_version}
+%autosetup -p1 -n dev-qubes
 
 # copy xen hypervisor .config file to change settings
 cp -v %{SOURCE3} xen/.config
@@ -1111,5 +1113,3 @@ fi
 %{_libdir}/ocaml/xen*/*.cmx
 %endif
 
-%changelog
-@CHANGELOG@
